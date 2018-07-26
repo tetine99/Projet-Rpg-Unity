@@ -4030,6 +4030,16 @@ Prefab:
       propertyPath: raySpell
       value: 
       objectReference: {fileID: 2138101193}
+    - target: {fileID: 114529400878399412, guid: 4e731dee9f25b394c88469989ae34738,
+        type: 2}
+      propertyPath: inputFront
+      value: z
+      objectReference: {fileID: 0}
+    - target: {fileID: 114529400878399412, guid: 4e731dee9f25b394c88469989ae34738,
+        type: 2}
+      propertyPath: inputLeft
+      value: q
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 4e731dee9f25b394c88469989ae34738, type: 2}
   m_IsPrefabParent: 0

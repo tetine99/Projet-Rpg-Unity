@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterMotor : MonoBehaviour {
+public class CharacterMotor : MonoBehaviour
+{
 
     // Scripts playerinventory
     PlayerInventory playerInv;
@@ -40,7 +41,8 @@ public class CharacterMotor : MonoBehaviour {
     public float lightningSpellCost;
     public float lightningSpellSpeed;
 
-    void Start () {
+    void Start()
+    {
         animations = gameObject.GetComponent<Animation>();
         playerCollider = gameObject.GetComponent<CapsuleCollider>();
         playerInv = gameObject.GetComponent<PlayerInventory>();
@@ -49,10 +51,11 @@ public class CharacterMotor : MonoBehaviour {
 
     bool IsGrounded()
     {
-        return Physics.CheckCapsule(playerCollider.bounds.center, new Vector3(playerCollider.bounds.center.x, playerCollider.bounds.min.y - 0.1f, playerCollider.bounds.center.z), 0.08f, layermask:9);
+        return Physics.CheckCapsule(playerCollider.bounds.center, new Vector3(playerCollider.bounds.center.x, playerCollider.bounds.min.y - 0.1f, playerCollider.bounds.center.z), 0.08f, layermask: 9);
     }
-	
-	void Update () {
+
+    void Update()
+    {
 
         if (!isDead)
         {
@@ -66,15 +69,7 @@ public class CharacterMotor : MonoBehaviour {
                     animations.Play("walk");
                 }
 
-                if (Input.GetKeyDown(KeyCode.Mouse0))
-                {
-                    Attack();
-                }
-
-                if (Input.GetKeyDown(KeyCode.Mouse1))
-                {
-                    AttackSpell();
-                }
+                checkMouseInputs();
             }
 
             // Si on sprint
@@ -94,15 +89,7 @@ public class CharacterMotor : MonoBehaviour {
                     animations.Play("walk");
                 }
 
-                if (Input.GetKeyDown(KeyCode.Mouse0))
-                {
-                    Attack();
-                }
-
-                if (Input.GetKeyDown(KeyCode.Mouse1))
-                {
-                    AttackSpell();
-                }
+                checkMouseInputs();
             }
 
             // rotation à gauche 
@@ -125,15 +112,7 @@ public class CharacterMotor : MonoBehaviour {
                     animations.Play("idle");
                 }
 
-                if (Input.GetKeyDown(KeyCode.Mouse0))
-                {
-                    Attack();
-                }
-
-                if (Input.GetKeyDown(KeyCode.Mouse1))
-                {
-                    AttackSpell();
-                }
+                checkMouseInputs();
             }
 
             // Si on saute
@@ -153,10 +132,24 @@ public class CharacterMotor : MonoBehaviour {
             currentCooldown -= Time.deltaTime;
         }
 
-        if(currentCooldown <= 0)
+        if (currentCooldown <= 0)
         {
             currentCooldown = attackCooldown;
             isAttacking = false;
+        }
+
+    }
+
+    void checkMouseInputs()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            Attack();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            AttackSpell();
         }
 
     }
@@ -170,18 +163,19 @@ public class CharacterMotor : MonoBehaviour {
 
             RaycastHit hit;
 
-            if(Physics.Raycast(rayHit.transform.position, transform.TransformDirection(Vector3.forward), out hit, attackRange))
+            if (Physics.Raycast(rayHit.transform.position, transform.TransformDirection(Vector3.forward), out hit, attackRange))
             {
                 Debug.DrawLine(rayHit.transform.position, hit.point, Color.red);
 
-                if (hit.transform.tag == "Enemy") {
+                if (hit.transform.tag == "Enemy")
+                {
                     hit.transform.GetComponent<enemyAi>().ApplyDammage(playerInv.currentDamage);
                 }
 
             }
             isAttacking = true;
         }
-        
+
     }
 
     // Fonction de sorts
