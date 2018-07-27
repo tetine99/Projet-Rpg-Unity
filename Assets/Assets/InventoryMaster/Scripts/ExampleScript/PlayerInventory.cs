@@ -16,10 +16,12 @@ public class PlayerInventory : MonoBehaviour
 
     private InputManager inputManagerDatabase;
 
+    // barres de vie et mana
     Image hpImage;
     Image manaImage;
 
-    float maxHealth = 100;
+    [HideInInspector]
+    public float maxHealth = 100;
     float maxMana = 100;
     float maxDamage = 0;
     float maxArmor = 0;
@@ -34,125 +36,6 @@ public class PlayerInventory : MonoBehaviour
     public CharacterMotor charactermotor;
     public Animation playerAnimations;
 
-    public void OnEnable()
-    {
-        Inventory.ItemEquip += OnBackpack;
-        Inventory.UnEquipItem += UnEquipBackpack;
-
-        Inventory.ItemEquip += OnGearItem;
-        Inventory.ItemConsumed += OnConsumeItem;
-        Inventory.UnEquipItem += OnUnEquipItem;
-
-        Inventory.ItemEquip += EquipWeapon;
-        Inventory.UnEquipItem += UnEquipWeapon;
-    }
-
-    public void OnDisable()
-    {
-        Inventory.ItemEquip -= OnBackpack;
-        Inventory.UnEquipItem -= UnEquipBackpack;
-
-        Inventory.ItemEquip -= OnGearItem;
-        Inventory.ItemConsumed -= OnConsumeItem;
-        Inventory.UnEquipItem -= OnUnEquipItem;
-
-        Inventory.UnEquipItem -= UnEquipWeapon;
-        Inventory.ItemEquip -= EquipWeapon;
-    }
-
-    void EquipWeapon(Item item)
-    {
-        if (item.itemType == ItemType.Weapon)
-        {
-            //add the weapon if you unequip the weapon
-        }
-    }
-
-    void UnEquipWeapon(Item item)
-    {
-        if (item.itemType == ItemType.Weapon)
-        {
-            //delete the weapon if you unequip the weapon
-        }
-    }
-
-    void OnBackpack(Item item)
-    {
-        if (item.itemType == ItemType.Backpack)
-        {
-            for (int i = 0; i < item.itemAttributes.Count; i++)
-            {
-                if (mainInventory == null)
-                    mainInventory = inventory.GetComponent<Inventory>();
-                mainInventory.sortItems();
-                if (item.itemAttributes[i].attributeName == "Slots")
-                    changeInventorySize(item.itemAttributes[i].attributeValue);
-            }
-        }
-    }
-
-    void UnEquipBackpack(Item item)
-    {
-        if (item.itemType == ItemType.Backpack)
-            changeInventorySize(normalSize);
-    }
-
-    void changeInventorySize(int size)
-    {
-        dropTheRestItems(size);
-
-        if (mainInventory == null)
-            mainInventory = inventory.GetComponent<Inventory>();
-        if (size == 3)
-        {
-            mainInventory.width = 3;
-            mainInventory.height = 1;
-            mainInventory.updateSlotAmount();
-            mainInventory.adjustInventorySize();
-        }
-        if (size == 6)
-        {
-            mainInventory.width = 3;
-            mainInventory.height = 2;
-            mainInventory.updateSlotAmount();
-            mainInventory.adjustInventorySize();
-        }
-        else if (size == 12)
-        {
-            mainInventory.width = 4;
-            mainInventory.height = 3;
-            mainInventory.updateSlotAmount();
-            mainInventory.adjustInventorySize();
-        }
-        else if (size == 16)
-        {
-            mainInventory.width = 4;
-            mainInventory.height = 4;
-            mainInventory.updateSlotAmount();
-            mainInventory.adjustInventorySize();
-        }
-        else if (size == 24)
-        {
-            mainInventory.width = 6;
-            mainInventory.height = 4;
-            mainInventory.updateSlotAmount();
-            mainInventory.adjustInventorySize();
-        }
-    }
-
-    void dropTheRestItems(int size)
-    {
-        if (size < mainInventory.ItemsInInventory.Count)
-        {
-            for (int i = size; i < mainInventory.ItemsInInventory.Count; i++)
-            {
-                GameObject dropItem = (GameObject)Instantiate(mainInventory.ItemsInInventory[i].itemModel);
-                dropItem.AddComponent<PickUpItem>();
-                dropItem.GetComponent<PickUpItem>().item = mainInventory.ItemsInInventory[i];
-                dropItem.transform.localPosition = GameObject.FindGameObjectWithTag("Player").transform.localPosition;
-            }
-        }
-    }
 
     void Start()
     {
@@ -178,97 +61,17 @@ public class PlayerInventory : MonoBehaviour
             craftSystemInventory = craftSystem.GetComponent<Inventory>();
     }
 
-    public void ApplyDamage(float TheDamage)
-    {
-        if (!charactermotor.isDead)
-        {
-            // la fameuse équation : PDV = PDV -(damage - ((armor * damage) / 100))
-            currentHealth = currentHealth - (TheDamage - ((currentArmor * TheDamage) / 100));
-
-            if (currentHealth <= 0)
-            {
-                Dead();
-            }
-        }
-    }
-
-    public void Dead() {
-        // On désactive la possibilité de déplacer son personnage lorsqu'il meurt
-        charactermotor.isDead = true;
-        playerAnimations.Play("diehard");
-    }
-
-    public void OnConsumeItem(Item item)
-    {
-        for (int i = 0; i < item.itemAttributes.Count; i++)
-        {
-            if (item.itemAttributes[i].attributeName == "Health")
-            {
-                if ((currentHealth + item.itemAttributes[i].attributeValue) > maxHealth)
-                    currentHealth = maxHealth;
-                else
-                    currentHealth += item.itemAttributes[i].attributeValue;
-            }
-            if (item.itemAttributes[i].attributeName == "Mana")
-            {
-                if ((currentMana + item.itemAttributes[i].attributeValue) > maxMana)
-                    currentMana = maxMana;
-                else
-                    currentMana += item.itemAttributes[i].attributeValue;
-            }
-            if (item.itemAttributes[i].attributeName == "Armor")
-            {
-                if ((currentArmor + item.itemAttributes[i].attributeValue) > maxArmor)
-                    currentArmor = maxArmor;
-                else
-                    currentArmor += item.itemAttributes[i].attributeValue;
-            }
-            if (item.itemAttributes[i].attributeName == "Damage")
-            {
-                if ((currentDamage + item.itemAttributes[i].attributeValue) > maxDamage)
-                    currentDamage = maxDamage;
-                else
-                    currentDamage += item.itemAttributes[i].attributeValue;
-            }
-        }
-
-    }
-
-    public void OnGearItem(Item item)
-    {
-        for (int i = 0; i < item.itemAttributes.Count; i++)
-        {
-            if (item.itemAttributes[i].attributeName == "Health")
-                currentHealth += item.itemAttributes[i].attributeValue;
-            if (item.itemAttributes[i].attributeName == "Mana")
-                currentMana += item.itemAttributes[i].attributeValue;
-            if (item.itemAttributes[i].attributeName == "Armor")
-                currentArmor += item.itemAttributes[i].attributeValue;
-            if (item.itemAttributes[i].attributeName == "Damage")
-                currentDamage += item.itemAttributes[i].attributeValue;
-        }
-
-    }
-
-    public void OnUnEquipItem(Item item)
-    {
-        for (int i = 0; i < item.itemAttributes.Count; i++)
-        {
-            if (item.itemAttributes[i].attributeName == "Health")
-                currentHealth -= item.itemAttributes[i].attributeValue;
-            if (item.itemAttributes[i].attributeName == "Mana")
-                currentMana -= item.itemAttributes[i].attributeValue;
-            if (item.itemAttributes[i].attributeName == "Armor")
-                currentArmor -= item.itemAttributes[i].attributeValue;
-            if (item.itemAttributes[i].attributeName == "Damage")
-                currentDamage -= item.itemAttributes[i].attributeValue;
-        }
-
-    }
 
     // Update is called once per frame
     void Update()
     {
+
+        // pour empecher la vie actuelle detre superieure a la vie max
+        if (currentHealth > maxHealth)
+        {
+            currentHealth = maxHealth;
+        }
+
         // Pour la barre de vie
         float percentageHP = ((currentHealth * 100) / maxHealth) / 100;
         hpImage.fillAmount = percentageHP;
@@ -321,4 +124,222 @@ public class PlayerInventory : MonoBehaviour
 
     }
 
+    public void OnEnable()
+    {
+        Inventory.ItemEquip += OnBackpack;
+        Inventory.UnEquipItem += UnEquipBackpack;
+
+        Inventory.ItemEquip += OnGearItem;
+        Inventory.ItemConsumed += OnConsumeItem;
+        Inventory.UnEquipItem += OnUnEquipItem;
+
+        Inventory.ItemEquip += EquipWeapon;
+        Inventory.UnEquipItem += UnEquipWeapon;
+    }
+
+    public void OnDisable()
+    {
+        Inventory.ItemEquip -= OnBackpack;
+        Inventory.UnEquipItem -= UnEquipBackpack;
+
+        Inventory.ItemEquip -= OnGearItem;
+        Inventory.ItemConsumed -= OnConsumeItem;
+        Inventory.UnEquipItem -= OnUnEquipItem;
+
+        Inventory.UnEquipItem -= UnEquipWeapon;
+        Inventory.ItemEquip -= EquipWeapon;
+    }
+
+    // quand on equipe une arme
+    void EquipWeapon(Item item)
+    {
+        if (item.itemType == ItemType.Weapon)
+        {
+            //add the weapon if you unequip the weapon
+        }
+    }
+
+    // quand on onleve une arme
+    void UnEquipWeapon(Item item)
+    {
+        if (item.itemType == ItemType.Weapon)
+        {
+            //delete the weapon if you unequip the weapon
+        }
+    }
+
+    // quand on equipe le sac a dos
+    void OnBackpack(Item item)
+    {
+        if (item.itemType == ItemType.Backpack)
+        {
+            for (int i = 0; i < item.itemAttributes.Count; i++)
+            {
+                if (mainInventory == null)
+                    mainInventory = inventory.GetComponent<Inventory>();
+                mainInventory.sortItems();
+                if (item.itemAttributes[i].attributeName == "Slots")
+                    changeInventorySize(item.itemAttributes[i].attributeValue);
+            }
+        }
+    }
+    // pour enlever le sac a dos
+    void UnEquipBackpack(Item item)
+    {
+        if (item.itemType == ItemType.Backpack)
+            changeInventorySize(normalSize);
+    }
+
+    // pour changer la taille de l'inventaire
+    void changeInventorySize(int size)
+    {
+        dropTheRestItems(size);
+
+        if (mainInventory == null)
+            mainInventory = inventory.GetComponent<Inventory>();
+        if (size == 3)
+        {
+            mainInventory.width = 3;
+            mainInventory.height = 1;
+            mainInventory.updateSlotAmount();
+            mainInventory.adjustInventorySize();
+        }
+        if (size == 6)
+        {
+            mainInventory.width = 3;
+            mainInventory.height = 2;
+            mainInventory.updateSlotAmount();
+            mainInventory.adjustInventorySize();
+        }
+        else if (size == 12)
+        {
+            mainInventory.width = 4;
+            mainInventory.height = 3;
+            mainInventory.updateSlotAmount();
+            mainInventory.adjustInventorySize();
+        }
+        else if (size == 16)
+        {
+            mainInventory.width = 4;
+            mainInventory.height = 4;
+            mainInventory.updateSlotAmount();
+            mainInventory.adjustInventorySize();
+        }
+        else if (size == 24)
+        {
+            mainInventory.width = 6;
+            mainInventory.height = 4;
+            mainInventory.updateSlotAmount();
+            mainInventory.adjustInventorySize();
+        }
+    }
+
+    // pour jeter les reste de l'inventaire
+    void dropTheRestItems(int size)
+    {
+        if (size < mainInventory.ItemsInInventory.Count)
+        {
+            for (int i = size; i < mainInventory.ItemsInInventory.Count; i++)
+            {
+                GameObject dropItem = (GameObject)Instantiate(mainInventory.ItemsInInventory[i].itemModel);
+                dropItem.AddComponent<PickUpItem>();
+                dropItem.GetComponent<PickUpItem>().item = mainInventory.ItemsInInventory[i];
+                dropItem.transform.localPosition = GameObject.FindGameObjectWithTag("Player").transform.localPosition;
+            }
+        }
+    }
+
+    // pour appliquer des dégats
+    public void ApplyDamage(float TheDamage)
+    {
+        if (!charactermotor.isDead)
+        {
+            // la fameuse équation : PDV = PDV -(damage - ((armor * damage) / 100))
+            currentHealth = currentHealth - (TheDamage - ((currentArmor * TheDamage) / 100));
+
+            if (currentHealth <= 0)
+            {
+                Dead();
+            }
+        }
+    }
+
+
+    // quand on utilise un item
+    public void OnConsumeItem(Item item)
+    {
+        for (int i = 0; i < item.itemAttributes.Count; i++)
+        {
+            if (item.itemAttributes[i].attributeName == "Health")
+            {
+                if ((currentHealth + item.itemAttributes[i].attributeValue) > maxHealth)
+                    currentHealth = maxHealth;
+                else
+                    currentHealth += item.itemAttributes[i].attributeValue;
+            }
+            if (item.itemAttributes[i].attributeName == "Mana")
+            {
+                if ((currentMana + item.itemAttributes[i].attributeValue) > maxMana)
+                    currentMana = maxMana;
+                else
+                    currentMana += item.itemAttributes[i].attributeValue;
+            }
+            if (item.itemAttributes[i].attributeName == "Armor")
+            {
+                if ((currentArmor + item.itemAttributes[i].attributeValue) > maxArmor)
+                    currentArmor = maxArmor;
+                else
+                    currentArmor += item.itemAttributes[i].attributeValue;
+            }
+            if (item.itemAttributes[i].attributeName == "Damage")
+            {
+                if ((currentDamage + item.itemAttributes[i].attributeValue) > maxDamage)
+                    currentDamage = maxDamage;
+                else
+                    currentDamage += item.itemAttributes[i].attributeValue;
+            }
+        }
+
+    }
+
+    // quand on equipe un item
+    public void OnGearItem(Item item)
+    {
+        for (int i = 0; i < item.itemAttributes.Count; i++)
+        {
+            if (item.itemAttributes[i].attributeName == "Health")
+                currentHealth += item.itemAttributes[i].attributeValue;
+            if (item.itemAttributes[i].attributeName == "Mana")
+                currentMana += item.itemAttributes[i].attributeValue;
+            if (item.itemAttributes[i].attributeName == "Armor")
+                currentArmor += item.itemAttributes[i].attributeValue;
+            if (item.itemAttributes[i].attributeName == "Damage")
+                currentDamage += item.itemAttributes[i].attributeValue;
+        }
+
+    }
+
+    // quand on enleve un item
+    public void OnUnEquipItem(Item item)
+    {
+        for (int i = 0; i < item.itemAttributes.Count; i++)
+        {
+            if (item.itemAttributes[i].attributeName == "Health")
+                currentHealth -= item.itemAttributes[i].attributeValue;
+            if (item.itemAttributes[i].attributeName == "Mana")
+                currentMana -= item.itemAttributes[i].attributeValue;
+            if (item.itemAttributes[i].attributeName == "Armor")
+                currentArmor -= item.itemAttributes[i].attributeValue;
+            if (item.itemAttributes[i].attributeName == "Damage")
+                currentDamage -= item.itemAttributes[i].attributeValue;
+        }
+
+    }
+    // quand on meurt
+    public void Dead()
+    {
+        // On désactive la possibilité de déplacer son personnage lorsqu'il meurt
+        charactermotor.isDead = true;
+        playerAnimations.Play("diehard");
+    }
 }
